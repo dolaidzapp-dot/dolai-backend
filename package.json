@@ -1,0 +1,13 @@
+{
+  "name": "dolai-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server-clean.js.txt",
+  "scripts": {
+    "start": "node server-clean.js.txt"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.0.0"
+  }
+}
