@@ -1,0 +1,35 @@
+const express = require('express');
+const app = express();
+app.use(express.json());
+// CORS - يسمح لأي صفحة تتصل بالخادم
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+app.get('/', (req, res) => {
+  res.json({ ok: true, service: 'DOLAI Backend AI' });
+});
+app.post('/api/chat', async (req, res) => {
+  const message = (req.body && req.body.message) || '';
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    return res.json({ reply: 'الخادم يخدم، بصح المفتاح مازال ما تحطش في Render.' });
+  }
+  try {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + key, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: 'You are DOLAI, a helpful Algerian AI assistant. Answer in simple Algerian dialect. User question: ' + message }] }] })
+    });
+    const data = await r.json();
+    const reply = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || 'ما قدرتش نجاوب درك، عاود حاول.';
+    res.json({ reply: reply });
+  } catch (e) {
+    res.json({ reply: 'صرات مشكلة في الخادم، عاود حاول.' });
+  }
+});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log('DOLAI AI running on ' + PORT));
